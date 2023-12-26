@@ -1,7 +1,10 @@
 <template>
   <table>
     <tr v-for="row in cells" :key="row.week">
-      <td v-for="cell in row" :key="cell.day">{{ cell.title }}<br>{{ cell.caption }}</td>
+      <td v-for="cell in row" :key="cell.day" v-bind:class="{ padded: cell.padded }">
+        <time>{{ this.dayAliases ? this.dayAliases[cell.title] : cell.title }}</time>
+        <div>{{ cell.caption }}</div>
+      </td>
     </tr>
   </table>
 </template>
@@ -24,8 +27,11 @@ export default {
   },
   computed: {
     calendarPage() {
-      const { calendar, secondCalendar, monthLength, lastLength, offset } = this
-      return {calendar, secondCalendar, monthLength, lastLength, offset }
+      const {  calendar, secondCalendar, monthStart } = this
+      return { calendar, secondCalendar, monthStart }
+    },
+    dayAliases() {
+      return this.calendar.dayAliases
     }
   },
   watch: {
@@ -33,13 +39,13 @@ export default {
       handler() {
         this.cells = new Array()
         const { monthLength, lastLength, monthStart, offset } = this
-        const weekLength = this.calendar.weekLength()
+        const weekLength = this.calendar.weekLength
         const rightOffset = (offset + monthLength - 1) % weekLength
         function getLeftOffset() {
           const row = []
           for (let i = 0; i < offset; i++) {
             const delta = offset - i
-            row.push({ title: lastLength + 1 - delta, day: monthStart - delta })
+            row.push({ title: lastLength + 1 - delta, day: monthStart - delta, padded: 'left' })
           }
           return row
         }
@@ -47,7 +53,7 @@ export default {
           const row = []
           for (let i = 1; i < weekLength - rightOffset; i++) {
             const delta = monthLength
-            row.push({ title: i, day: monthStart + delta + i })
+            row.push({ title: i, day: monthStart + delta + i, padded: 'right' })
           }
           return row
         }
@@ -80,3 +86,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.padded {
+  color: var(--devui-aide-text);
+}
+</style>

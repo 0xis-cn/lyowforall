@@ -1,14 +1,14 @@
 <template>
-  <CalendarMain />
+  <IndexView />
 </template>
 
 <script>
-import CalendarMain from './components/CalendarMain.vue'
+import IndexView from './views/IndexView.vue'
 
 export default {
   name: 'App',
   components: {
-		CalendarMain
+    IndexView
   },
 }
 </script>

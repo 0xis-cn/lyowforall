@@ -2739,22 +2739,38 @@ function bsearch(trigger) {
 	return left
 }
 
+const guas = [
+	'',"火","祭祀", "对手", "成败", "反叛", "救赎", "爆发",
+	"欲望",   "木", "创造", "新生", "凋谢", "重生", "弥散",
+	"自我", "寻找", "存在", "经典", "革新", "梦幻", "倾听",
+	"忍耐", "腐朽", "绝笔",   "地", "孤独", "小人", "永恒",
+	"恶魔", "盛开", "理解", "泥土",   "风", "雾气",   "神",
+	"对抗", "绽放", "思考", "同伴", "变幻",   "水", "隐退",
+	"超越", "生命", "表达", "破碎", "时间", "朦胧", "自然"]
+
 class SeptimalCalendar extends Calendar {
 	name = 'septimalCalendar'
-	weekOffset = 1
-	weekLength() {
-		return 7
+	weekOffset = 0
+	weekLength = 7
+	yearRange = [1, 5999]
+	dayAliases = guas
+	isLeapYear(year) {
+		return leapYears[bsearch(x => leapYears[x] >= year)] == year
 	}
 	monthLengths(year) {
-		if (leapYears[bsearch(x => leapYears[x] >= year)] == year)
-			return [49, 49, 49, 49, 49, 49, 49, 49]
-		return [49, 49, 49, 49, 49, 49, 49]
+		return new Array(this.isLeapYear(year) ? 8 : 7).fill(49)
+	}
+	monthAliases(year) {
+		if (this.isLeapYear(year))
+			return ['火契', '木契', '光契', '土契', '风契', '水契', '空契', '闰契']
+		else
+			return ['火契', '木契', '光契', '土契', '风契', '水契', '空契']
 	}
 	day(day) {
 		day -= 743343
 		const targetQi = Math.ceil(day / 49)
 		const date = day - (targetQi - 1) * 49
-		const pos = bsearch(x => leapYears[x] * 7 + x + 1 >= day)
+		const pos = bsearch(x => leapYears[x] * 7 + x + 1 >= targetQi)
 		const year = leapYears[pos]
 		const delta = year * 7 + pos - targetQi
 		if (delta < 0)
@@ -2762,16 +2778,8 @@ class SeptimalCalendar extends Calendar {
 		return [year - Math.floor(delta / 7), 6 - delta % 7, date]
 	}
 	dayCaptions(start, count) {
-		const date = this.day(start)[2] - 1
-		const name = [
-			"火",   "祭祀", "对手", "成败", "反叛", "救赎", "爆发",
-			"欲望",   "木", "创造", "新生", "凋谢", "重生", "弥散",
-			"自我", "寻找", "存在", "经典", "革新", "梦幻", "倾听",
-			"忍耐", "腐朽", "绝笔",   "地", "孤独", "小人", "永恒",
-			"恶魔", "盛开", "理解", "泥土",   "风", "雾气",   "神",
-			"对抗", "绽放", "思考", "同伴", "变幻",   "水", "隐退",
-			"超越", "生命", "表达", "破碎", "时间", "朦胧", "自然"]
-		return name.concat(name).slice(date, date + count)
+		const date = this.day(start)[2] - 1, guas1 = guas.slice(1)
+		return guas1.concat(guas1).slice(date, date + count)
 	}
 	julian(year, month, date) {
 		const pos = bsearch(x => leapYears[x] >= year)
