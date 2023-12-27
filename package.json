@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "pika": "vue-cli-service build && git add dist && git commit && git subtree push --prefix dist github gh-pages && rm -r dist && git push"
+    "double-push": "git subtree push --prefix dist github gh-pages && rm -r dist && git push"
   },
   "dependencies": {
     "@devui-design/icons": "^1.3.0",
