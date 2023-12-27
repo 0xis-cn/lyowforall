@@ -2724,7 +2724,8 @@ const leapYears = [	// TODO: 修改实现
 5993,
 5995,
 5997,
-5999
+5999,
+6001,
 ]
 
 function bsearch(trigger) {
@@ -2749,7 +2750,7 @@ const guas = [
 	"超越", "生命", "表达", "破碎", "时间", "朦胧", "自然"]
 
 class SeptimalCalendar extends Calendar {
-	name = 'septimalCalendar'
+	name = '七历'
 	weekOffset = 0
 	weekLength = 7
 	yearRange = [1, 5999]
@@ -2778,8 +2779,11 @@ class SeptimalCalendar extends Calendar {
 		return [year - Math.floor(delta / 7), 6 - delta % 7, date]
 	}
 	dayCaptions(start, count) {
-		const date = this.day(start)[2] - 1, guas1 = guas.slice(1)
-		return guas1.concat(guas1).slice(date, date + count)
+		const [year, , date] = this.day(start)
+		if (year < this.yearRange[0] || year > this.yearRange[1])
+			return
+		const guas1 = guas.concat(guas.slice(1))
+		return guas1.slice(date, date + count)
 	}
 	julian(year, month, date) {
 		const pos = bsearch(x => leapYears[x] >= year)

@@ -1,10 +1,10 @@
 import Calendar from './Calendar.js';
 
 class DefaultCalendar extends Calendar {
-	name = '默认'
+	name = '调试用'
 	weekOffset = 1
 	weekLength = 7
-	yearRange = [1900, 9999]
+	yearRange = [-271820, 275759]
 	monthLengths(year) {
 		let days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 		if (year % 4 == 0 && (year % 100 != 0 || year % 16 == 0))
@@ -28,7 +28,8 @@ class DefaultCalendar extends Calendar {
 		return result
 	}
 	julian(year, month, date) {
-		const obj = new Date(year, month, date)
+		const obj = new Date()
+		obj.setFullYear(year, month, date)
 		const realTime = obj.getTime() - obj.getTimezoneOffset() * 60000
 		return Math.floor(realTime / 86400000) + 2440588
 	}

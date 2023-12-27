@@ -59,6 +59,8 @@ export default {
         }
         function addCaption(cells, secondCalendar, start, count) {
           const captions = secondCalendar.dayCaptions(start, count)
+          if (!captions)
+            return
           let used = 0
           for (let row of cells)
             for (let cell of row)

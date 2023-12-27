@@ -5,8 +5,8 @@
         <div>
           <d-button variant=text id=year-button v-show=!this.editYear
             @click=openEditYear>{{ this.year }}</d-button>
-          <d-input-number v-show=this.editYear @blur=changeYear v-model=this.inputYear 
-            :min="this.calendar.yearRange[0]" :max="this.calendar.yearRange[1]"/>&#8194;
+          <d-input-number v-show=this.editYear @blur=changeYear v-model=this.inputYear ref=inputYear
+            :min="this.calendar.yearRange[0]" :max="this.calendar.yearRange[1]" size=lg />&#8194;
           <d-dropdown>
             <d-button variant=text id=month-button>{{ this.monthAliases[this.month] }}</d-button>
             <template #menu>
@@ -22,11 +22,10 @@
         <div id=buttons>
           <d-button-group>
             <d-button icon=icon-collapse :disabled="this.prevDisabled()" @click=prevPage />
-            <d-button @click=backToday>今</d-button>
+            <d-button @click=backToday color=fake-icon>今</d-button>
             <d-button icon=icon-chevron-right :disabled="this.nextDisabled()" @click=nextPage />
           </d-button-group>
-          <d-button icon=icon-setting color=secondary 
-            @click="this.showSettings = !this.showSettings"/>
+          <d-button icon=icon-setting @click="this.showSettings = !this.showSettings"/>
         </div>
       </nav>
       <CalendarDisplay 
@@ -39,10 +38,10 @@
     </div>
     <div id=right-column>
       <ul id=settings v-show=this.showSettings>
-        <li>主显<d-select v-model=this.calendarIdx>
+        <li>主显<d-select v-model=this.calendarIdx @value-change=calendarChange>
           <d-option v-for="(i, idx) in allCalendars" :key=idx :value=idx :name=i.name />
         </d-select></li>
-        <li>次显<d-select v-model=this.secondCalendarIdx>
+        <li>次显<d-select v-model=this.secondCalendarIdx @value-change=calendarChange>
           <d-option v-for="(i, idx) in allCalendars" :key=idx :value=idx :name=i.name />
         </d-select></li>
       </ul>
@@ -68,7 +67,7 @@ export default {
   name: 'CalendarMain',
   data() {
     return {
-      calendarIdx: 0, secondCalendarIdx: 1,
+      calendarIdx: 0, secondCalendarIdx: 1, lastCalendarIdx: 0, lastSecondCalendarIdx: 1,
       year: 0, month: 0, title: 0, editYear: false, inputYear: 0, showSettings: false,
       day: julianDayToday(), monthLengths: new Array(), monthAliases: new Array(),
       lastLength: 0, monthLength: 0, monthStart: 0, offset: 0,
@@ -78,6 +77,7 @@ export default {
     openEditYear() {
       this.inputYear = this.year
       this.editYear = true
+      this.$refs.inputYear.select()
     },
     changeYear() {
       this.year = this.inputYear
@@ -136,7 +136,15 @@ export default {
     },
     nextDisabled() {
       return this.calendar.yearRange[1] == this.year && this.month == this.monthLengths.length - 1
-    }
+    },
+    calendarChange() {
+      if (this.calendarIdx == this.secondCalendarIdx) {
+        this.calendarIdx = this.lastSecondCalendarIdx
+        this.secondCalendarIdx = this.lastCalendarIdx
+      }
+      this.lastCalendarIdx = this.calendarIdx
+      this.lastSecondCalendarIdx = this.secondCalendarIdx
+    },
   },
   created() {
     this.backToday()
@@ -147,6 +155,14 @@ export default {
     },
     calendarIdx() {
       this.adjustWithJulian()
+      const [ minYear, maxYear ] = this.calendar.yearRange
+      if (this.year < minYear) {
+        this.year = minYear
+        this.adjustWithYmd()
+      } else if (this.year > maxYear) {
+        this.year = maxYear
+        this.adjustWithYmd()
+      }
     }
   },
   components: { CalendarDisplay, CalendarAside },
@@ -165,6 +181,10 @@ export default {
 </script>
 
 <style>
+ul {
+  list-style: none;
+}
+
 body {
   background: var(--devui-global-bg);
 }
@@ -235,8 +255,17 @@ nav {
   padding: 0.25rem;
 }
 
+#settings {
+  background: var(--devui-base-bg);
+  border-radius: var(--devui-border-radius-card);
+}
+
 #settings li {
-  padding: 0.25rem;
-  background: var(--devui-info-bg);
+  padding: 0.5rem;
+}
+
+.devui-button--outline--fake-icon:hover {   /* hack */
+  background: var(--devui-list-item-hover-bg);
+  color: var(--devui-brand-active);
 }
 </style>
