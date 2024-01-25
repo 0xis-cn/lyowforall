@@ -1,7 +1,9 @@
 <template>
   <table>
     <tr v-for="row in cells" :key="row.week">
-      <td v-for="cell in row" :key="cell.day" v-bind:class="{ padded: cell.padded }">
+      <td v-for="cell in row" :key="cell.day" :data-title=cell.title
+          v-bind:class="{ 'padded-left':  cell.padded == 'left',
+                          'padded-right': cell.padded == 'right' }">
         <time>{{ this.dayAliases ? this.dayAliases[cell.title] : cell.title }}</time>
         <div>{{ cell.caption }}</div>
       </td>
@@ -23,7 +25,8 @@ export default {
     monthLength: { type: Number },
     lastLength: { type: Number },
     monthStart: { type: Number },
-    offset: { type: Number }
+    titleDay: { type: Number },
+    offset: { type: Number },
   },
   computed: {
     calendarPage() {
@@ -85,12 +88,18 @@ export default {
       },
       immediate: true
     }
+  },
+  mounted() {
+    this.$emit('redraw')
+  },
+  updated() {
+    this.$emit('redraw')
   }
 }
 </script>
 
 <style>
-.padded {
+.padded-left, .padded-right {
   color: var(--devui-aide-text);
 }
 </style>

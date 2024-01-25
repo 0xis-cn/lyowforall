@@ -4,7 +4,7 @@
       <nav>
         <div>
           <d-button variant=text id=year-button v-show=!this.editYear
-            @click=openEditYear>{{ this.year }}</d-button>
+            @click=openEditYear>{{ this.yearAlias }}</d-button>
           <d-input-number v-show=this.editYear @blur=changeYear v-model=this.inputYear ref=inputYear
             :min="this.calendar.yearRange[0]" :max="this.calendar.yearRange[1]" size=lg />&#8194;
           <d-dropdown>
@@ -29,6 +29,7 @@
         </div>
       </nav>
       <CalendarDisplay 
+        @click=this.dateClick @redraw=this.toggleHighlight
         :calendar=this.calendar
         :secondCalendar=this.secondCalendar
         :monthLength=this.monthLength
@@ -58,6 +59,9 @@ import DefaultCalendar from '@/util/DefaultCalendar.js'
 const defaultCalendar = new DefaultCalendar()
 import SeptimalCalendar from '@/util/SeptimalCalendar.js'
 const septimalCalendar = new SeptimalCalendar()
+import HetesflusCalendar from '@/util/HetesflusCalendar.js'
+const hetesflusCalendar = new HetesflusCalendar()
+
 
 function julianDayToday() {
   return 2440588 + Math.floor(new Date().getTime() / 86400000)
@@ -70,7 +74,7 @@ export default {
       calendarIdx: 0, secondCalendarIdx: 1, lastCalendarIdx: 0, lastSecondCalendarIdx: 1,
       year: 0, month: 0, title: 0, editYear: false, inputYear: 0, showSettings: false,
       day: julianDayToday(), monthLengths: new Array(), monthAliases: new Array(),
-      lastLength: 0, monthLength: 0, monthStart: 0, offset: 0,
+      lastLength: 0, monthLength: 0, monthStart: 0, offset: 0, highlightBlock: null,
     }
   },
   methods: {
@@ -84,6 +88,24 @@ export default {
       this.adjustWithYmd()
       this.editYear = false
     },
+    dateClick(e) {
+      const target = e.target
+      if (target && target.nodeName == 'TD') {
+        this.title = +target.dataset.title
+        const classes = target.classList
+        if (classes.contains('padded-left'))
+          this.prevPage()
+        else if (classes.contains('padded-right'))
+          this.nextPage()
+        else {
+          if (this.highlightBlock)
+            this.highlightBlock.classList.remove('highlight-block')
+          this.day += this.title - this.highlightBlock.dataset.title
+          this.highlightBlock = target
+          target.classList.add('highlight-block')
+        }
+      }
+    },
     prevPage() {
       --this.month
       this.adjustWithYmd()
@@ -95,6 +117,19 @@ export default {
     changeMonth(idx) {
       this.month = idx
       this.adjustWithYmd()
+    },
+    toggleHighlight() {
+      if (this.highlightBlock)
+        this.highlightBlock.classList.remove('highlight-block')
+      for (const i of document.getElementsByTagName('td')) {
+        if (i.dataset.title && i.dataset.title == this.title &&
+            !i.classList.contains('padded-left') && 
+            !i.classList.contains('padded-right')) {
+          this.highlightBlock = i
+          i.classList.add('highlight-block')
+          break
+        }
+      }
     },
     adjustWithYmd() {
       while (this.month < 0) {
@@ -154,8 +189,9 @@ export default {
       this.monthAliases = this.calendar.monthAliases(this.year)
     },
     calendarIdx() {
-      this.adjustWithJulian()
+      const oldYear = this.year
       const [ minYear, maxYear ] = this.calendar.yearRange
+      this.adjustWithJulian()
       if (this.year < minYear) {
         this.year = minYear
         this.adjustWithYmd()
@@ -163,18 +199,24 @@ export default {
         this.year = maxYear
         this.adjustWithYmd()
       }
+      if (this.year == oldYear)
+        this.monthAliases = this.calendar.monthAliases(this.year)
     }
   },
   components: { CalendarDisplay, CalendarAside },
   computed: {
     allCalendars() {
-      return [defaultCalendar, septimalCalendar] // TODO: 拆至独立文件
+      return [defaultCalendar, septimalCalendar, hetesflusCalendar] // TODO: 拆至独立文件
     },
     calendar() {
       return this.allCalendars[this.calendarIdx]
     },
     secondCalendar() {
       return this.allCalendars[this.secondCalendarIdx]
+    },
+    yearAlias() {
+      const aliasFunc = this.calendar.yearAlias
+      return aliasFunc ? aliasFunc(this.year) : this.year
     }
   }
 }
@@ -228,6 +270,14 @@ table time {
   line-height: 1.75em;
 }
 
+td div {
+  white-space: nowrap;
+}
+
+td {
+  height: 3.5em;
+}
+
 nav {
   display: flex;
   padding: 0.5em 2em;
@@ -267,5 +317,10 @@ nav {
 .devui-button--outline--fake-icon:hover {   /* hack */
   background: var(--devui-list-item-hover-bg);
   color: var(--devui-brand-active);
+}
+
+.highlight-block {
+  background: var(--devui-brand-active-focus);
+  color: var(--devui-light-text);
 }
 </style>

@@ -1,7 +1,7 @@
 import Calendar from './Calendar.js';
 
 class DefaultCalendar extends Calendar {
-	name = '调试用'
+	name = '调试历法'
 	weekOffset = 1
 	weekLength = 7
 	yearRange = [-271820, 275759]
@@ -23,7 +23,7 @@ class DefaultCalendar extends Calendar {
 		const result = new Array(count)
 		for (var i = 0; i < count; ++i) {
 			const [ , month, date ] = this.day(start + i)
-			result[i] = (1 + month) + '月' + date + '日'
+			result[i] = date == 1 ? (1 + month) + '月1日' : date + '日'
 		}
 		return result
 	}
