@@ -4,7 +4,7 @@
       <nav>
         <div>
           <d-button variant=text id=year-button v-show=!this.editYear
-            @click=openEditYear>{{ this.yearAlias }}</d-button>
+            @click=openEditYear>{{ this.yearAlias }}年</d-button>
           <d-input-number v-show=this.editYear @blur=changeYear v-model=this.inputYear ref=inputYear
             :min="this.calendar.yearRange[0]" :max="this.calendar.yearRange[1]" size=lg />&#8194;
           <d-dropdown>
@@ -35,18 +35,27 @@
         :monthLength=this.monthLength
         :monthStart=this.monthStart
         :offset=this.offset
+        :appointedDays=this.appointedDays
         :lastLength=this.lastLength />
     </div>
     <div id=right-column>
-      <ul id=settings v-show=this.showSettings>
-        <li>主显<d-select v-model=this.calendarIdx @value-change=calendarChange>
-          <d-option v-for="(i, idx) in allCalendars" :key=idx :value=idx :name=i.name />
-        </d-select></li>
-        <li>次显<d-select v-model=this.secondCalendarIdx @value-change=calendarChange>
-          <d-option v-for="(i, idx) in allCalendars" :key=idx :value=idx :name=i.name />
-        </d-select></li>
-      </ul>
-      <CalendarAside />
+      <nav>{{ this.todayDifference }}</nav>
+      <d-form v-show=this.showSettings>
+        <d-form-item label="主显">
+          <d-select v-model=this.calendarIdx @value-change=calendarChange>
+            <d-option v-for="(i, idx) in allCalendars" :key=idx :value=idx :name=i.name />
+          </d-select>
+        </d-form-item>
+        <d-form-item label="次显">
+          <d-select v-model=this.secondCalendarIdx @value-change=calendarChange>
+            <d-option v-for="(i, idx) in allCalendars" :key=idx :value=idx :name=i.name />
+          </d-select>
+        </d-form-item>
+        <d-form-item :key=idx v-for="(o, idx) in this.calendar.options" :label="o[0]" >
+          <d-switch v-model="o[1]" v-if="typeof o[1] == 'boolean'"></d-switch>
+        </d-form-item>
+      </d-form>
+      <CalendarAside :day=this.day />
     </div>
   </main>
 </template>
@@ -71,10 +80,24 @@ export default {
   name: 'CalendarMain',
   data() {
     return {
-      calendarIdx: 0, secondCalendarIdx: 1, lastCalendarIdx: 0, lastSecondCalendarIdx: 1,
-      year: 0, month: 0, title: 0, editYear: false, inputYear: 0, showSettings: false,
-      day: julianDayToday(), monthLengths: new Array(), monthAliases: new Array(),
-      lastLength: 0, monthLength: 0, monthStart: 0, offset: 0, highlightBlock: null,
+      calendarIdx: 0,
+      secondCalendarIdx: 1,
+      lastCalendarIdx: 0,
+      lastSecondCalendarIdx: 1,
+      year: 0,
+      month: 0,
+      title: 0,
+      editYear: false,
+      inputYear: 0,
+      showSettings: false,
+      day: julianDayToday(),
+      monthLengths: new Array(),
+      monthAliases: new Array(),
+      lastLength: 0,
+      monthLength: 0, 
+      monthStart: 0,
+      offset: 0,
+      highlightBlock: null,
     }
   },
   methods: {
@@ -89,7 +112,9 @@ export default {
       this.editYear = false
     },
     dateClick(e) {
-      const target = e.target
+      let target = e.target
+      if (target && target.parentNode && target.parentNode.nodeName == 'TD')
+        target = target.parentNode
       if (target && target.nodeName == 'TD') {
         this.title = +target.dataset.title
         const classes = target.classList
@@ -148,6 +173,7 @@ export default {
     backToday() {
       this.day = julianDayToday()
       this.adjustWithJulian()
+      this.toggleHighlight()
     },
     adjustWithJulian() {
       [this.year, this.month, this.title] = this.calendar.day(this.day)
@@ -156,8 +182,11 @@ export default {
       this.adjustCommon()
     },
     adjustCommon() {
-      const weekLength = this.calendar.weekLength
-      this.monthStart = this.day - this.title + 1
+      const weekLength = this.calendar.weekdays.length
+      if (this.appointedDays)
+        this.monthStart = this.day - this.appointedDays.indexOf(this.title)
+      else    // XXX: 上行新增
+        this.monthStart = this.day - this.title + 1
       this.offset = (this.monthStart + this.calendar.weekOffset) % weekLength
       if (this.month == 0) {
         const lastLengths = this.calendar.monthLengths(this.year - 1)
@@ -217,7 +246,19 @@ export default {
     yearAlias() {
       const aliasFunc = this.calendar.yearAlias
       return aliasFunc ? aliasFunc(this.year) : this.year
-    }
+    },
+    appointedDays() {
+      return this.calendar.appointedDays ? this.calendar.appointedDays(this.year, this.month) : null
+    },
+    todayDifference () {
+      const diff = this.day - julianDayToday()
+      if (diff > -3 && diff < 3)
+        return ['前天', '昨天', '今天', '明天', '后天'][diff + 2]
+      else if (diff < 0)
+        return -diff + '天前'
+      else
+        return diff + '天后'
+    },
   }
 }
 </script>
@@ -280,7 +321,7 @@ td {
 
 nav {
   display: flex;
-  padding: 0.5em 2em;
+  padding: 0.5em 1em;
   justify-content: space-between;
   align-items: center;
 }
@@ -305,13 +346,10 @@ nav {
   padding: 0.25rem;
 }
 
-#settings {
+.devui-form {
   background: var(--devui-base-bg);
   border-radius: var(--devui-border-radius-card);
-}
-
-#settings li {
-  padding: 0.5rem;
+  padding: 1em;
 }
 
 .devui-button--outline--fake-icon:hover {   /* hack */
@@ -322,5 +360,6 @@ nav {
 .highlight-block {
   background: var(--devui-brand-active-focus);
   color: var(--devui-light-text);
+  border-radius: 8px;
 }
 </style>

@@ -2752,7 +2752,7 @@ const guas = [
 class SeptimalCalendar extends Calendar {
 	name = '七历'
 	weekOffset = 0
-	weekLength = 7
+	weekdays = ['日', '一', '二', '三', '四', '五', '六']
 	yearRange = [1, 5999]
 	dayAliases = guas
 	isLeapYear(year) {
@@ -2789,6 +2789,9 @@ class SeptimalCalendar extends Calendar {
 		const pos = bsearch(x => leapYears[x] >= year)
 		return 743343 + date + ((year - 1) * 7 + pos + month) * 49
 	}
+	options = [
+		['暂未实现', false]
+	]
 }
 
 export default SeptimalCalendar

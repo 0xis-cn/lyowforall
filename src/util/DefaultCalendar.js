@@ -1,10 +1,13 @@
 import Calendar from './Calendar.js';
 
 class DefaultCalendar extends Calendar {
-	name = '调试历法'
+	name = '默认'
 	weekOffset = 1
-	weekLength = 7
+	weekdays = ['日', '一', '二', '三', '四', '五', '六']
 	yearRange = [-271820, 275759]
+	yearAlias(year) {
+		return year > 0 ? year : '前' + (1 - year)
+	}
 	monthLengths(year) {
 		let days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 		if (year % 4 == 0 && (year % 100 != 0 || year % 16 == 0))
@@ -23,7 +26,7 @@ class DefaultCalendar extends Calendar {
 		const result = new Array(count)
 		for (var i = 0; i < count; ++i) {
 			const [ , month, date ] = this.day(start + i)
-			result[i] = date == 1 ? (1 + month) + '月1日' : date + '日'
+			result[i] = date == 1 ? (1 + month) + '月🏕️' : date + '日'
 		}
 		return result
 	}

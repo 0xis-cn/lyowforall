@@ -3,11 +3,13 @@ import Calendar from './Calendar.js';
 class HetesflusCalendar extends Calendar {
 	name = '夏花历'
 	weekOffset = 1
-	weekLength = 7
+	weekdays = ['日', '一', '二', '三', '四', '五', '六']
 	yearRange = [1, 6005]
 	monthLengths(year) {
 		let days = [31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 30, 30]
-		if (year % 4 == 1 && (year % 100 != 77 || year % 16 == 5))
+		if (year == 4260)
+			days[6] -= 10
+		else if (year % 4 == 1 && (year % 100 != 77 || year % 16 == 5))
 			days[11] = 31
 		return days
 	}
@@ -46,18 +48,23 @@ class HetesflusCalendar extends Calendar {
 		const result = new Array(count)
 		for (var i = 0; i < count; ++i) {
 			const [ , month, date ] = this.day(start + i)
-			result[i] = date == 1 ? this.monthAliases()[month] + '1日' : date + '日'
+			result[i] = date == 1 ? '🔥' + this.monthAliases()[month] : date + '日'
 		}
 		return result
 	}
 	julian(year, month, date) {
-		if (year > 4259 || year == 4259 && (month > 6 || month > 6 && date > 15)) {
+		if (year > 4260 || year == 4260 && (month > 6 || month == 6 && date > 13)) {
 			date -= 10 
 			date += Math.floor((year - 3877) / 400)
 			date -= Math.floor((year - 4177) / 100)
 		}
 		date += 30 * month + Math.min(month, 5)
 		return (year - 1) * 365 + Math.floor((year + 2) / 4) + date + 743362
+	}
+	appointedDays(year, month) {
+		if (year == 4260 && month == 6)
+			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 24, 25, 26, 27, 28, 29, 30]
+		return null
 	}
 }
 

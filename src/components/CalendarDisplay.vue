@@ -1,5 +1,8 @@
 <template>
   <table>
+    <tr>
+      <th v-for="(day, idx) in this.calendar.weekdays" :key="idx">{{ day }}</th>
+    </tr>
     <tr v-for="row in cells" :key="row.week">
       <td v-for="cell in row" :key="cell.day" :data-title=cell.title
           v-bind:class="{ 'padded-left':  cell.padded == 'left',
@@ -27,6 +30,7 @@ export default {
     monthStart: { type: Number },
     titleDay: { type: Number },
     offset: { type: Number },
+    appointedDays: { type: Array },
   },
   computed: {
     calendarPage() {
@@ -42,8 +46,7 @@ export default {
       handler() {
         this.cells = new Array()
         const { monthLength, lastLength, monthStart, offset } = this
-        const weekLength = this.calendar.weekLength
-        const rightOffset = (offset + monthLength - 1) % weekLength
+        const weekLength = this.calendar.weekdays.length
         function getLeftOffset() {
           const row = []
           for (let i = 0; i < offset; i++) {
@@ -52,9 +55,9 @@ export default {
           }
           return row
         }
-        function getRightOffset() {
+        function getRightOffset(length) {
           const row = []
-          for (let i = 1; i < weekLength - rightOffset; i++) {
+          for (let i = 1; i <= length; i++) {
             const delta = monthLength
             row.push({ title: i, day: monthStart + delta + i, padded: 'right' })
           }
@@ -71,7 +74,8 @@ export default {
         }
         let row = getLeftOffset(), week = offset, rowCount = 0
         for (let i = 1; i <= monthLength; i++) {
-          row.push({ title: i, day: monthStart + i })
+          const title = this.appointedDays ? this.appointedDays[i - 1] : i
+          row.push({ title: title, day: monthStart + i })
           if (++week == weekLength) {
             row.week = ++rowCount
             this.cells.push(row)
@@ -79,7 +83,8 @@ export default {
             week = 0
           }
         }
-        row.push(...getRightOffset())
+        if (week)
+          row.push(...getRightOffset(weekLength - week))
         row.week = ++rowCount
         this.cells.push(row)
         if (this.secondCalendar)
