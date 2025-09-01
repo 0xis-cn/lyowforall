@@ -1,24 +1,16 @@
-# lyowforall
+<p style="font-size:4em;text-align:center">📅</p>
 
-## Project setup
-```
-npm install
-```
+*Lyowforall* is a calendar view for all calendar systems.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Features
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- Calendars
+  - [x] Default ([Proleptic Gregorian](https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar))
+  - [x] [Septimal Calendar](https://wiki.xdi8.top/wiki/%E4%B8%83%E5%8E%86)
+  - [x] [Hetesflus calendar](https://wiki.xdi8.top/wiki/%E5%A4%8F%E8%8A%B1%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD)
+  - [ ] `cal`-compatible
+  - [ ] [Tibetan calendar](https://en.wikipedia.org/wiki/Tibetan_calendar)
+  - [ ] [Nya calendar](https://github.com/ayaka14732/nya-calendar/)
+- [ ] i18n
+- [ ] Options within a calendar
+- [ ] Standalone plugin

@@ -36,6 +36,8 @@
         :monthStart=this.monthStart
         :offset=this.offset
         :appointedDays=this.appointedDays
+        :prevAppointedDays=this.prevAppointedDays
+        :nextAppointedDays=this.nextAppointedDays
         :lastLength=this.lastLength />
     </div>
     <div id=right-column>
@@ -52,7 +54,7 @@
           </d-select>
         </d-form-item>
         <d-form-item :key=idx v-for="(o, idx) in this.calendar.options" :label="o[0]" >
-          <d-switch v-model="o[1]" v-if="typeof o[1] == 'boolean'"></d-switch>
+          <d-switch v-model="o[1].value" v-if="typeof o[1].value == 'boolean'"></d-switch>
         </d-form-item>
       </d-form>
       <CalendarAside :day=this.day />
@@ -64,13 +66,16 @@
 import CalendarDisplay from "@/components/CalendarDisplay.vue"
 import CalendarAside from "@/components/CalendarAside.vue"
 
-import DefaultCalendar from '@/util/DefaultCalendar.js'
-const defaultCalendar = new DefaultCalendar()
-import SeptimalCalendar from '@/util/SeptimalCalendar.js'
-const septimalCalendar = new SeptimalCalendar()
-import HetesflusCalendar from '@/util/HetesflusCalendar.js'
-const hetesflusCalendar = new HetesflusCalendar()
+const calendarFiles = require.context('@/util/calendars', false, /\.js$/)
+const calendarInstances = []
 
+calendarFiles.keys().forEach(key => {
+  const module = calendarFiles(key)
+  const CalendarClass = module.default
+  if (CalendarClass) {
+    calendarInstances.push(new CalendarClass())
+  }
+})
 
 function julianDayToday() {
   return 2440588 + Math.floor(new Date().getTime() / 86400000)
@@ -86,7 +91,7 @@ export default {
       lastSecondCalendarIdx: 1,
       year: 0,
       month: 0,
-      title: 0,
+      dayMonth: 0,
       editYear: false,
       inputYear: 0,
       showSettings: false,
@@ -98,6 +103,8 @@ export default {
       monthStart: 0,
       offset: 0,
       highlightBlock: null,
+      optionValues: new Array(),
+      allCalendars: calendarInstances,
     }
   },
   methods: {
@@ -116,7 +123,7 @@ export default {
       if (target && target.parentNode && target.parentNode.nodeName == 'TD')
         target = target.parentNode
       if (target && target.nodeName == 'TD') {
-        this.title = +target.dataset.title
+        this.dayMonth = +target.dataset.idx
         const classes = target.classList
         if (classes.contains('padded-left'))
           this.prevPage()
@@ -125,7 +132,7 @@ export default {
         else {
           if (this.highlightBlock)
             this.highlightBlock.classList.remove('highlight-block')
-          this.day += this.title - this.highlightBlock.dataset.title
+          this.day += this.dayMonth - this.highlightBlock.dataset.idx
           this.highlightBlock = target
           target.classList.add('highlight-block')
         }
@@ -147,7 +154,7 @@ export default {
       if (this.highlightBlock)
         this.highlightBlock.classList.remove('highlight-block')
       for (const i of document.getElementsByTagName('td')) {
-        if (i.dataset.title && i.dataset.title == this.title &&
+        if (i.dataset.idx && i.dataset.idx == this.dayMonth &&
             !i.classList.contains('padded-left') && 
             !i.classList.contains('padded-right')) {
           this.highlightBlock = i
@@ -156,18 +163,25 @@ export default {
         }
       }
     },
+    adjustMonthWithYear(monthDiff) {
+      let { year, month, monthLengths } = this
+      month += monthDiff
+      while (month < 0) {
+        monthLengths = this.calendar.monthLengths(--year)
+        month += monthLengths.length
+      }
+      while (month >= monthLengths.length) {
+        month -= monthLengths.length
+        monthLengths = this.calendar.monthLengths(++year)
+      }
+      return { year, month, monthLengths }
+    },
     adjustWithYmd() {
-      while (this.month < 0) {
-        this.monthLengths = this.calendar.monthLengths(--this.year)
-        this.month += this.monthLengths.length
-      }
-      this.monthLengths = this.calendar.monthLengths(this.year)
-      while (this.month >= this.monthLengths.length) {
-        this.month -= this.monthLengths.length
-        this.monthLengths = this.calendar.monthLengths(++this.year)
-      }
+      const { year, month, monthLengths } = this.adjustMonthWithYear(0);
+      [this.year, this.month, this.monthLengths] = [year, month, monthLengths];
+      console.log(year, month, monthLengths)
       this.monthLength = this.monthLengths[this.month]
-      this.day = this.calendar.julian(this.year, this.month, this.title)
+      this.day = this.calendar.julian(this.year, this.month, this.dayMonth)
       this.adjustCommon()
     },
     backToday() {
@@ -176,17 +190,14 @@ export default {
       this.toggleHighlight()
     },
     adjustWithJulian() {
-      [this.year, this.month, this.title] = this.calendar.day(this.day)
+      [this.year, this.month, this.dayMonth] = this.calendar.day(this.day)
       this.monthLengths = this.calendar.monthLengths(this.year)
       this.monthLength = this.monthLengths[this.month]
       this.adjustCommon()
     },
     adjustCommon() {
       const weekLength = this.calendar.weekdays.length
-      if (this.appointedDays)
-        this.monthStart = this.day - this.appointedDays.indexOf(this.title)
-      else    // XXX: 上行新增
-        this.monthStart = this.day - this.title + 1
+      this.monthStart = this.day - this.dayMonth + 1
       this.offset = (this.monthStart + this.calendar.weekOffset) % weekLength
       if (this.month == 0) {
         const lastLengths = this.calendar.monthLengths(this.year - 1)
@@ -234,9 +245,6 @@ export default {
   },
   components: { CalendarDisplay, CalendarAside },
   computed: {
-    allCalendars() {
-      return [defaultCalendar, septimalCalendar, hetesflusCalendar] // TODO: 拆至独立文件
-    },
     calendar() {
       return this.allCalendars[this.calendarIdx]
     },
@@ -247,17 +255,28 @@ export default {
       const aliasFunc = this.calendar.yearAlias
       return aliasFunc ? aliasFunc(this.year) : this.year
     },
-    appointedDays() {
-      return this.calendar.appointedDays ? this.calendar.appointedDays(this.year, this.month) : null
-    },
     todayDifference () {
+      function bigNumber(x) {
+        return x > 9999 ? x.toLocaleString() : x
+      }
       const diff = this.day - julianDayToday()
       if (diff > -3 && diff < 3)
         return ['前天', '昨天', '今天', '明天', '后天'][diff + 2]
       else if (diff < 0)
-        return -diff + '天前'
+        return bigNumber(-diff) + ' 天前'
       else
-        return diff + '天后'
+        return bigNumber(diff) + ' 天后'
+    },
+    appointedDays() {
+      return this.calendar.appointedDays ? this.calendar.appointedDays(this.year, this.month) : null
+    },
+    nextAppointedDays() {
+      const { year, month } = this.adjustMonthWithYear(1)
+      return this.calendar.appointedDays ? this.calendar.appointedDays(year, month) : null
+    },
+    prevAppointedDays() {
+      const { year, month } = this.adjustMonthWithYear(-1)
+      return this.calendar.appointedDays ? this.calendar.appointedDays(year, month) : null
     },
   }
 }

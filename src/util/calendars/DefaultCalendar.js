@@ -1,4 +1,4 @@
-import Calendar from './Calendar.js';
+import Calendar from '@/util/Calendar.js';
 
 class DefaultCalendar extends Calendar {
 	name = '默认'

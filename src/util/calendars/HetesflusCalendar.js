@@ -1,4 +1,4 @@
-import Calendar from './Calendar.js';
+import Calendar from '@/util/Calendar.js';
 
 class HetesflusCalendar extends Calendar {
 	name = '夏花历'
