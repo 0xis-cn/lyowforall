@@ -12,5 +12,9 @@
   - [ ] [Tibetan calendar](https://en.wikipedia.org/wiki/Tibetan_calendar)
   - [ ] [Nya calendar](https://github.com/ayaka14732/nya-calendar/)
 - [ ] i18n
-- [ ] Options within a calendar
+- [ ] Options for calendar (introduced but )
 - [ ] Standalone plugin
+
+## Contribution
+
+Issues and pull requests are welcomed. To implement a new calendar, [see the documentation](https://github.com/0xis-cn/lyowforall/wiki/Calendar-interface).
