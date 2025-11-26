@@ -12,7 +12,7 @@
   - [ ] [Tibetan calendar](https://en.wikipedia.org/wiki/Tibetan_calendar)
   - [ ] [Nya calendar](https://github.com/ayaka14732/nya-calendar/)
 - [ ] i18n
-- [ ] Options for calendar (introduced but )
+- [ ] Options for calendar
 - [ ] Standalone plugin
 
 ## Contribution

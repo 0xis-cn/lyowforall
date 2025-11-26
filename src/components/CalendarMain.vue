@@ -6,7 +6,7 @@
           <d-button variant=text id=year-button v-show=!this.editYear
             @click=openEditYear>{{ this.yearAlias }}年</d-button>
           <d-input-number v-show=this.editYear @blur=changeYear v-model=this.inputYear ref=inputYear
-            :min="this.calendar.yearRange[0]" :max="this.calendar.yearRange[1]" size=lg />&#8194;
+            :min="this.calendar.yearRange[0]" :max="this.calendar.yearRange[1]" size=lg />
           <d-dropdown>
             <d-button variant=text id=month-button>{{ this.monthAliases[this.month] }}</d-button>
             <template #menu>
@@ -18,6 +18,10 @@
               </ul>
             </template>
           </d-dropdown>
+          <d-button variant=text id=day-button v-show=!this.editDay
+            @click=openEditDay>{{ this.appointedDays ? this.appointedDays[this.dayMonth - 1] : this.dayMonth }}日</d-button>
+          <input type=date v-show=this.editDay ref=inputDay v-model="inputDate"
+            @change="onDateChange" @blur="onDateBlur" />
         </div>
         <div id=buttons>
           <d-button-group>
@@ -93,6 +97,7 @@ export default {
       month: 0,
       dayMonth: 0,
       editYear: false,
+      editDay: false,
       inputYear: 0,
       showSettings: false,
       day: julianDayToday(),
@@ -105,13 +110,61 @@ export default {
       highlightBlock: null,
       optionValues: new Array(),
       allCalendars: calendarInstances,
+      inputDate: '',
     }
   },
   methods: {
+    isoFromJulian(jd) {
+      if (!Number.isFinite(jd)) return ''
+      const ms = (jd - 2440588) * 86400000
+      const d = new Date(ms)
+      const y = d.getUTCFullYear()
+      const m = d.getUTCMonth() + 1
+      const day = d.getUTCDate()
+      const yy = String(y).padStart(4, '0')
+      return yy + '-' + String(m).padStart(2, '0') + '-' + String(day).padStart(2, '0')
+    },
+
+    julianFromIso(iso) {
+      if (!iso || typeof iso !== 'string') return NaN
+      // accept YYYY-MM-DD, optionally with leading +/- for extended years
+      const m = iso.match(/^([+-]?\d{1,6})-(\d{2})-(\d{2})$/)
+      if (!m) return NaN
+      const year = Number(m[1])
+      const month = Number(m[2])
+      const day = Number(m[3])
+      if (!Number.isFinite(year) || month < 1 || month > 12 || day < 1 || day > 31) return NaN
+      const ms = Date.UTC(year, month - 1, day)
+      if (!Number.isFinite(ms)) return NaN
+      return 2440588 + Math.floor(ms / 86400000)
+    },
     openEditYear() {
       this.inputYear = this.year
       this.editYear = true
       this.$refs.inputYear.select()
+    },
+    openEditDay() {
+      // initialize the native date input from current julian day
+      this.inputDate = this.isoFromJulian(this.day)
+      this.editDay = true
+      this.$nextTick(() => {
+        if (this.$refs.inputDay && this.$refs.inputDay.focus)
+          this.$refs.inputDay.focus()
+      })
+    },
+    onDateChange() {
+      // parse ISO date (YYYY-MM-DD) and compute julian day
+      const jd = this.julianFromIso(this.inputDate)
+      if (Number.isFinite(jd)) {
+        this.day = jd
+        this.adjustWithJulian()
+        this.toggleHighlight()
+      }
+      this.editDay = false
+    },
+    onDateBlur() {
+      // apply change on blur too
+      this.onDateChange()
     },
     changeYear() {
       this.year = this.inputYear
@@ -198,7 +251,7 @@ export default {
     adjustCommon() {
       const weekLength = this.calendar.weekdays.length
       this.monthStart = this.day - this.dayMonth + 1
-      this.offset = (this.monthStart + this.calendar.weekOffset) % weekLength
+      this.offset = ((this.monthStart + this.calendar.weekOffset) % weekLength + weekLength) % weekLength
       if (this.month == 0) {
         const lastLengths = this.calendar.monthLengths(this.year - 1)
         this.lastLength = lastLengths[lastLengths.length - 1]
@@ -256,16 +309,16 @@ export default {
       return aliasFunc ? aliasFunc(this.year) : this.year
     },
     todayDifference () {
-      function bigNumber(x) {
+      function displayNumber(x) {
         return x > 9999 ? x.toLocaleString() : x
       }
       const diff = this.day - julianDayToday()
       if (diff > -3 && diff < 3)
         return ['前天', '昨天', '今天', '明天', '后天'][diff + 2]
       else if (diff < 0)
-        return bigNumber(-diff) + ' 天前'
+        return displayNumber(-diff) + ' 天前'
       else
-        return bigNumber(diff) + ' 天后'
+        return displayNumber(diff) + ' 天后'
     },
     appointedDays() {
       return this.calendar.appointedDays ? this.calendar.appointedDays(this.year, this.month) : null
@@ -345,7 +398,7 @@ nav {
   align-items: center;
 }
 
-#year-button .button-content, #month-button .button-content {
+#year-button .button-content, #month-button .button-content, #day-button .button-content {
   font-size: 1.25em;
 }
 
@@ -380,5 +433,21 @@ nav {
   background: var(--devui-brand-active-focus);
   color: var(--devui-light-text);
   border-radius: 8px;
+}
+
+.caption-badge {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  border-radius: 0.5rem;
+  border: 1px solid var(--devui-brand-active-focus);
+  color: var(--devui-brand-active-focus);
+  background: transparent;
+  font-size: 0.9em;
+}
+
+/* When the cell is highlighted, make the badge match the highlighted text color */
+.highlight-block .caption-badge {
+  color: var(--devui-light-text);
+  border-color: var(--devui-light-text);
 }
 </style>

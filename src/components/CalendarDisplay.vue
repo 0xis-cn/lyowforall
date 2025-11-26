@@ -8,7 +8,10 @@
           v-bind:class="{ 'padded-left':  cell.padded == 'left',
                           'padded-right': cell.padded == 'right' }">
         <time>{{ this.dayAliases ? this.dayAliases[cell.appointedDay] : cell.appointedDay }}</time>
-        <div>{{ cell.caption }}</div>
+        <div>
+          <span v-if="cell.caption && cell.caption.badge" class="caption-badge">{{ cell.caption.text }}</span>
+          <span v-else>{{ cell.caption }}</span>
+        </div>
       </td>
     </tr>
   </table>

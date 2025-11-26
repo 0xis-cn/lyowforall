@@ -26,7 +26,13 @@ class DefaultCalendar extends Calendar {
 		const result = new Array(count)
 		for (var i = 0; i < count; ++i) {
 			const [ , month, date ] = this.day(start + i)
-			result[i] = date == 1 ? (1 + month) + '月🏕️' : date + '日'
+			// For month-start captions return a structured object so the UI
+			// can render it as a styled badge instead of using emoji.
+			if (date == 1) {
+				result[i] = { text: (1 + month) + '月', badge: true }
+			} else {
+				result[i] = date + '日'
+			}
 		}
 		return result
 	}

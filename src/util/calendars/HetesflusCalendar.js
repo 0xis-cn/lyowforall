@@ -48,7 +48,12 @@ class HetesflusCalendar extends Calendar {
 		const result = new Array(count)
 		for (var i = 0; i < count; ++i) {
 			const [ , month, date ] = this.day(start + i)
-			result[i] = date == 1 ? '🔥' + this.monthAliases()[month] : date + '日'
+			// Return structured caption for month-start so UI can style it
+			if (date == 1) {
+				result[i] = { text: this.monthAliases()[month], badge: true }
+			} else {
+				result[i] = date + '日'
+			}
 		}
 		return result
 	}
