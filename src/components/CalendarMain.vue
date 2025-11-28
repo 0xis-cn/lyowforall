@@ -275,17 +275,21 @@ export default {
     },
     syncOptionToCalendar(idx) {
       // Sync reactive option value back to the calendar's plain options
-      if (this.calendar.options && this.calendar.options[idx]) {
+      if (this.calendar.options && 
+          this.calendar.options[idx] && 
+          this.calendarOptions[idx]) {
         this.calendar.options[idx][1] = this.calendarOptions[idx].value
       }
     },
     loadCalendarOptions() {
       // Load calendar options into reactive state for Vue binding
-      if (this.calendar.options) {
-        this.calendarOptions = this.calendar.options.map(o => ({
-          name: o[0],
-          value: o[1]
-        }))
+      if (this.calendar.options && Array.isArray(this.calendar.options)) {
+        this.calendarOptions = this.calendar.options
+          .filter(o => Array.isArray(o) && o.length >= 2)
+          .map(o => ({
+            name: o[0],
+            value: o[1]
+          }))
       } else {
         this.calendarOptions = []
       }
