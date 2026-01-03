@@ -1,4 +1,9 @@
-<p style="font-size:4em;text-align:center">📅</p>
+> It’s funny to talk about internationalization but only support Western date format.  
+> If you are managing hospital admissions in Nepal, you have to be able to provide the date in Nepalese calendar and in the common one. And believe me, the Nepalese calendar is a complex one.  
+> In Ethiopia, you'll have to support 13 months but they'll be close enough to common dates that people will manage mentally. But imagine that you have to handle a quarter of 4 months, one of which is 5 or 6 days long.  
+> — edarchis, [commenting in Hacker News](https://news.ycombinator.com/item?id=45903018)
+
+![](docs/cover.png)
 
 *Lyowforall* is a calendar view for all calendar systems.
 
