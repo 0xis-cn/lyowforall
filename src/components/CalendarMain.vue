@@ -57,8 +57,8 @@
             <d-option v-for="(i, idx) in allCalendars" :key=idx :value=idx :name=i.name />
           </d-select>
         </d-form-item>
-        <d-form-item :key=idx v-for="(o, idx) in this.calendar.options" :label="o[0]" >
-          <d-switch v-model="o[1].value" v-if="typeof o[1].value == 'boolean'"></d-switch>
+        <d-form-item :key=idx v-for="(o, idx) in this.calendarOptions" :label="o.name" >
+          <d-switch v-model="o.value" v-if="typeof o.value == 'boolean'" @change="syncOptionToCalendar(idx)"></d-switch>
         </d-form-item>
       </d-form>
       <CalendarAside :day=this.day />
@@ -108,7 +108,7 @@ export default {
       monthStart: 0,
       offset: 0,
       highlightBlock: null,
-      optionValues: new Array(),
+      calendarOptions: new Array(),
       allCalendars: calendarInstances,
       inputDate: '',
     }
@@ -273,9 +273,31 @@ export default {
       this.lastCalendarIdx = this.calendarIdx
       this.lastSecondCalendarIdx = this.secondCalendarIdx
     },
+    syncOptionToCalendar(idx) {
+      // Sync reactive option value back to the calendar's plain options
+      if (this.calendar.options && 
+          this.calendar.options[idx] && 
+          this.calendarOptions[idx]) {
+        this.calendar.options[idx][1] = this.calendarOptions[idx].value
+      }
+    },
+    loadCalendarOptions() {
+      // Load calendar options into reactive state for Vue binding
+      if (this.calendar.options && Array.isArray(this.calendar.options)) {
+        this.calendarOptions = this.calendar.options
+          .filter(o => Array.isArray(o) && o.length >= 2)
+          .map(o => ({
+            name: o[0],
+            value: o[1]
+          }))
+      } else {
+        this.calendarOptions = []
+      }
+    },
   },
   created() {
     this.backToday()
+    this.loadCalendarOptions()
   },
   watch: {
     year() {
@@ -294,6 +316,7 @@ export default {
       }
       if (this.year == oldYear)
         this.monthAliases = this.calendar.monthAliases(this.year)
+      this.loadCalendarOptions()
     }
   },
   components: { CalendarDisplay, CalendarAside },
