@@ -1,25 +1,102 @@
-> It’s funny to talk about internationalization but only support Western date format.  
-> If you are managing hospital admissions in Nepal, you have to be able to provide the date in Nepalese calendar and in the common one. And believe me, the Nepalese calendar is a complex one.  
-> In Ethiopia, you'll have to support 13 months but they'll be close enough to common dates that people will manage mentally. But imagine that you have to handle a quarter of 4 months, one of which is 5 or 6 days long.  
-> — edarchis, [commenting in Hacker News](https://news.ycombinator.com/item?id=45903018)
+# lyowforall
 
-![](docs/cover.png)
+`lyowforall` is now a lightweight, dependency-free JavaScript datepicker library.
 
-*Lyowforall* is a calendar view for all calendar systems.
+## Install
 
-## Features
+```bash
+npm install lyowforall
+```
 
-- Calendars
-  - [x] Default ([Proleptic Gregorian](https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar))
-  - [x] [Septimal Calendar](https://wiki.xdi8.top/wiki/%E4%B8%83%E5%8E%86)
-  - [x] [Hetesflus calendar](https://wiki.xdi8.top/wiki/%E5%A4%8F%E8%8A%B1%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD)
-  - [ ] `cal`-compatible
-  - [ ] [Tibetan calendar](https://en.wikipedia.org/wiki/Tibetan_calendar)
-  - [ ] [Nya calendar](https://github.com/ayaka14732/nya-calendar/)
-- [ ] i18n
-- [ ] Options for calendar
-- [ ] Standalone plugin
+## Usage
 
-## Contribution
+### Class/module API
 
-Issues and pull requests are welcomed. To implement a new calendar, [see the documentation](https://github.com/0xis-cn/lyowforall/wiki/Calendar-interface).
+```js
+import { DatePicker, SeptimalCalendar } from 'lyowforall';
+import 'lyowforall/src/styles/datepicker.css';
+
+const input = document.querySelector('#date');
+const picker = new DatePicker(input, {
+  value: '2026-08-01',
+  min: '2026-01-01',
+  max: '2026-12-31',
+  locale: 'en-US',
+  calendar: new SeptimalCalendar(),
+  onChange(detail) {
+    console.log(detail.iso);
+  },
+});
+
+picker.open();
+picker.setValue('2026-08-12');
+picker.getValue();
+picker.close();
+picker.destroy();
+```
+
+### Web Component API
+
+```html
+<script type="module">
+  import { defineLiteDatePicker } from 'lyowforall';
+  defineLiteDatePicker();
+</script>
+
+<lite-datepicker
+  value="2026-08-01"
+  min="2026-01-01"
+  max="2026-12-31"
+  locale="en-US"
+  calendar="hetesflus"
+></lite-datepicker>
+```
+
+The element dispatches `change` events (`event.detail.iso`, `event.detail.value`).
+
+## Options
+
+Both APIs support:
+
+- `value` (`YYYY-MM-DD` string or `Date`)
+- `min` (`YYYY-MM-DD` string or `Date`)
+- `max` (`YYYY-MM-DD` string or `Date`)
+- `locale` (BCP-47 locale string)
+- `calendar` (`'default' | 'septimal' | 'hetesflus'` or custom calendar object for class API)
+
+Parsing is deterministic and ISO-first (`YYYY-MM-DD`), formatting uses `Intl.DateTimeFormat`.
+
+## Restored calendars (in-repo)
+
+`src/util/calendars/` is restored and shipped in this repository, including:
+- `DefaultCalendar`
+- `SeptimalCalendar`
+- `HetesflusCalendar`
+
+The datepicker layout (month lengths, month labels, weekday labels, and month grid structure) is driven by the selected calendar implementation.
+
+## Class methods
+
+- `open()` / `close()` / `toggle()`
+- `setValue(value)` / `getValue()`
+- `destroy()`
+
+## Accessibility
+
+- Popup anchored to input/control
+- Keyboard support: Arrow keys, `Enter`, `Escape`
+- ARIA roles for calendar grid/cells
+- `aria-expanded` on trigger control
+
+## Example
+
+See `/examples/basic.html`.
+
+## Migration from the previous Vue app
+
+This project is now a framework-agnostic library.
+
+Breaking changes:
+- Vue app entrypoints and Vue runtime dependencies were removed.
+- The main APIs are now `DatePicker` and `<lite-datepicker>`.
+- Date parsing behavior is strict ISO (`YYYY-MM-DD`) by default.

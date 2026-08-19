@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lite DatePicker Example</title>
+    <link rel="stylesheet" href="../src/styles/datepicker.css" />
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 1.5rem; display: grid; gap: 1rem; }
+      input { padding: 0.45rem 0.65rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Lite DatePicker</h1>
+
+    <label>
+      Class API:
+      <input id="class-date" placeholder="YYYY-MM-DD" />
+    </label>
+
+    <lite-datepicker value="2026-07-15" min="2026-01-01" max="2026-12-31"></lite-datepicker>
+    <lite-datepicker calendar="hetesflus"></lite-datepicker>
+
+    <script type="module">
+      import { DatePicker, defineLiteDatePicker, SeptimalCalendar } from '../src/index.js';
+
+      defineLiteDatePicker();
+
+      const input = document.getElementById('class-date');
+      new DatePicker(input, {
+        min: '2026-01-01',
+        max: '2026-12-31',
+        calendar: new SeptimalCalendar(),
+      });
+    </script>
+  </body>
+</html>
