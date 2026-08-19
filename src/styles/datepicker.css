@@ -1,0 +1,102 @@
+:root {
+  --lite-datepicker-bg: #fff;
+  --lite-datepicker-border: #d0d7de;
+  --lite-datepicker-text: #1f2328;
+  --lite-datepicker-muted: #8c959f;
+  --lite-datepicker-selected-bg: #0969da;
+  --lite-datepicker-selected-text: #fff;
+}
+
+.lite-datepicker-host {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.lite-datepicker {
+  width: 18rem;
+  background: var(--lite-datepicker-bg);
+  border: 1px solid var(--lite-datepicker-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(31, 35, 40, 0.12);
+  color: var(--lite-datepicker-text);
+  padding: 0.5rem;
+}
+
+.lite-datepicker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.lite-datepicker-header button {
+  border: 1px solid var(--lite-datepicker-border);
+  background: transparent;
+  border-radius: 6px;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.lite-datepicker-title {
+  font-weight: 600;
+}
+
+.lite-datepicker-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lite-datepicker-grid th {
+  font-size: 0.75rem;
+  color: var(--lite-datepicker-muted);
+  font-weight: 500;
+  text-align: center;
+  padding: 0.25rem;
+}
+
+.lite-datepicker-grid td {
+  text-align: center;
+  padding: 0.1rem;
+}
+
+.lite-datepicker-day {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.lite-datepicker-day:hover:not(:disabled),
+.lite-datepicker-day:focus-visible {
+  border-color: var(--lite-datepicker-border);
+  outline: none;
+}
+
+.lite-datepicker-day.is-selected {
+  background: var(--lite-datepicker-selected-bg);
+  color: var(--lite-datepicker-selected-text);
+}
+
+.lite-datepicker-day.is-outside {
+  color: var(--lite-datepicker-muted);
+}
+
+.lite-datepicker-day.is-badge {
+  font-size: 0.72rem;
+}
+
+.lite-datepicker-day:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.lite-datepicker-control {
+  border: 1px solid var(--lite-datepicker-border);
+  background: var(--lite-datepicker-bg);
+  color: var(--lite-datepicker-text);
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
