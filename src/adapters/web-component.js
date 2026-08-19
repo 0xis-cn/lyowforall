@@ -2,7 +2,9 @@ import { createDatePickerCore } from '../core/state.js';
 import { coerceDate, formatDate, toISODate } from '../core/date.js';
 import { focusActiveCell, renderPopup } from './dom.js';
 
-export class LiteDatePickerElement extends HTMLElement {
+const HTMLElementBase = typeof HTMLElement === 'undefined' ? class {} : HTMLElement;
+
+export class LiteDatePickerElement extends HTMLElementBase {
   static get observedAttributes() {
     return ['value', 'min', 'max', 'locale', 'disabled'];
   }
@@ -200,7 +202,7 @@ export class LiteDatePickerElement extends HTMLElement {
 }
 
 export function defineLiteDatePicker(tagName = 'lite-datepicker') {
-  if (!customElements.get(tagName)) {
+  if (typeof customElements !== 'undefined' && !customElements.get(tagName)) {
     customElements.define(tagName, LiteDatePickerElement);
   }
 }
