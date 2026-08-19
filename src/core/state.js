@@ -1,26 +1,30 @@
 import {
   addDays,
-  addMonths,
   clampDate,
   coerceDate,
   parseISODate,
-  startOfMonth,
   toISODate,
   todayUTC,
 } from './date.js';
-import { buildCalendarModel } from './calendar.js';
+import { addCalendarMonths, buildCalendarModel, startOfCalendarMonth } from './calendar.js';
+import { resolveCalendar } from '../util/calendars/index.js';
 
 function normalizeOptions(options = {}) {
   const min = coerceDate(options.min);
   const max = coerceDate(options.max);
   let value = coerceDate(options.value);
   value = clampDate(value, min, max);
+  const calendar = resolveCalendar(options.calendar);
 
   return {
     value,
     min,
     max,
     locale: options.locale || undefined,
+    calendar,
+    calendarName: options.calendar == null
+      ? 'default'
+      : (typeof options.calendar === 'string' ? options.calendar : 'custom'),
   };
 }
 
@@ -28,7 +32,7 @@ export function createDatePickerCore(initialOptions = {}) {
   let options = normalizeOptions(initialOptions);
   let isOpen = false;
   let value = options.value;
-  let viewDate = startOfMonth(value || todayUTC());
+  let viewDate = startOfCalendarMonth(value || todayUTC(), options.calendar);
   let focusedDate = value || viewDate;
 
   const subscribers = new Set();
@@ -52,7 +56,7 @@ export function createDatePickerCore(initialOptions = {}) {
     value = normalized;
     if (value) {
       focusedDate = value;
-      viewDate = startOfMonth(value);
+      viewDate = startOfCalendarMonth(value, options.calendar);
     }
 
     emit('change', { value, iso: nextIso, source });
@@ -90,6 +94,7 @@ export function createDatePickerCore(initialOptions = {}) {
           min: options.min,
           max: options.max,
           locale: options.locale,
+          calendar: options.calendar,
         }),
       };
     },
@@ -124,20 +129,21 @@ export function createDatePickerCore(initialOptions = {}) {
         min: options.min,
         max: options.max,
         locale: options.locale,
+        calendar: options.calendar,
         ...partial,
       };
       options = normalizeOptions(merged);
       value = clampDate(value, options.min, options.max);
       focusedDate = clampDate(focusedDate, options.min, options.max) || value || viewDate;
-      if (value) viewDate = startOfMonth(value);
+      viewDate = startOfCalendarMonth(value || viewDate, options.calendar);
       emitState();
     },
     navigateMonth(step) {
-      viewDate = addMonths(viewDate, step);
-      focusedDate = clampDate(startOfMonth(viewDate), options.min, options.max) || startOfMonth(viewDate);
+      viewDate = addCalendarMonths(viewDate, step, options.calendar);
+      const monthStart = startOfCalendarMonth(viewDate, options.calendar);
+      focusedDate = clampDate(monthStart, options.min, options.max) || monthStart;
       emit('navigate', {
-        month: viewDate.getUTCMonth() + 1,
-        year: viewDate.getUTCFullYear(),
+        calendar: options.calendarName,
       });
       emitState();
     },
@@ -145,7 +151,7 @@ export function createDatePickerCore(initialOptions = {}) {
       const parsed = parseISODate(iso);
       if (!parsed) return;
       focusedDate = clampDate(parsed, options.min, options.max) || focusedDate;
-      if (focusedDate) viewDate = startOfMonth(focusedDate);
+      if (focusedDate) viewDate = startOfCalendarMonth(focusedDate, options.calendar);
       emitState();
     },
     selectFocused(source = 'keyboard') {
@@ -164,22 +170,22 @@ export function createDatePickerCore(initialOptions = {}) {
       switch (key) {
         case 'ArrowLeft':
           focusedDate = clampDate(addDays(focusedDate, -1), options.min, options.max) || focusedDate;
-          viewDate = startOfMonth(focusedDate);
+          viewDate = startOfCalendarMonth(focusedDate, options.calendar);
           emitState();
           return true;
         case 'ArrowRight':
           focusedDate = clampDate(addDays(focusedDate, 1), options.min, options.max) || focusedDate;
-          viewDate = startOfMonth(focusedDate);
+          viewDate = startOfCalendarMonth(focusedDate, options.calendar);
           emitState();
           return true;
         case 'ArrowUp':
           focusedDate = clampDate(addDays(focusedDate, -7), options.min, options.max) || focusedDate;
-          viewDate = startOfMonth(focusedDate);
+          viewDate = startOfCalendarMonth(focusedDate, options.calendar);
           emitState();
           return true;
         case 'ArrowDown':
           focusedDate = clampDate(addDays(focusedDate, 7), options.min, options.max) || focusedDate;
-          viewDate = startOfMonth(focusedDate);
+          viewDate = startOfCalendarMonth(focusedDate, options.calendar);
           emitState();
           return true;
         case 'Enter':

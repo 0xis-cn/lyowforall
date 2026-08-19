@@ -83,6 +83,10 @@
   color: var(--lite-datepicker-muted);
 }
 
+.lite-datepicker-day.is-badge {
+  font-size: 0.72rem;
+}
+
 .lite-datepicker-day:disabled {
   opacity: 0.35;
   cursor: not-allowed;

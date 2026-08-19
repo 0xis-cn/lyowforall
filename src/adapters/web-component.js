@@ -6,7 +6,7 @@ const HTMLElementBase = typeof HTMLElement === 'undefined' ? class {} : HTMLElem
 
 export class LiteDatePickerElement extends HTMLElementBase {
   static get observedAttributes() {
-    return ['value', 'min', 'max', 'locale', 'disabled'];
+    return ['value', 'min', 'max', 'locale', 'disabled', 'calendar'];
   }
 
   constructor() {
@@ -121,6 +121,7 @@ export class LiteDatePickerElement extends HTMLElementBase {
       min: this.getAttribute('min'),
       max: this.getAttribute('max'),
       locale: this.getAttribute('locale') || undefined,
+      calendar: this.getAttribute('calendar') || undefined,
     });
   }
 
@@ -178,6 +179,15 @@ export class LiteDatePickerElement extends HTMLElementBase {
   set disabled(next) {
     if (next) this.setAttribute('disabled', '');
     else this.removeAttribute('disabled');
+  }
+
+  get calendar() {
+    return this.getAttribute('calendar') || 'default';
+  }
+
+  set calendar(next) {
+    if (!next) this.removeAttribute('calendar');
+    else this.setAttribute('calendar', next);
   }
 
   open() {

@@ -1,4 +1,6 @@
 const ISO_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+const MS_PER_DAY = 86400000;
+const UNIX_EPOCH_JULIAN_DAY = 2440588;
 
 function utcDate(year, monthIndex, day) {
   return new Date(Date.UTC(year, monthIndex, day));
@@ -101,4 +103,16 @@ export function inRange(date, min, max) {
   if (min && date < min) return false;
   if (max && date > max) return false;
   return true;
+}
+
+export function toJulianDay(date) {
+  return Math.floor(date.getTime() / MS_PER_DAY) + UNIX_EPOCH_JULIAN_DAY;
+}
+
+export function fromJulianDay(julianDay) {
+  return new Date((julianDay - UNIX_EPOCH_JULIAN_DAY) * MS_PER_DAY);
+}
+
+export function mod(n, m) {
+  return ((n % m) + m) % m;
 }

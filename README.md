@@ -13,7 +13,7 @@ npm install lyowforall
 ### Class/module API
 
 ```js
-import { DatePicker } from 'lyowforall';
+import { DatePicker, SeptimalCalendar } from 'lyowforall';
 import 'lyowforall/src/styles/datepicker.css';
 
 const input = document.querySelector('#date');
@@ -22,6 +22,7 @@ const picker = new DatePicker(input, {
   min: '2026-01-01',
   max: '2026-12-31',
   locale: 'en-US',
+  calendar: new SeptimalCalendar(),
   onChange(detail) {
     console.log(detail.iso);
   },
@@ -47,6 +48,7 @@ picker.destroy();
   min="2026-01-01"
   max="2026-12-31"
   locale="en-US"
+  calendar="hetesflus"
 ></lite-datepicker>
 ```
 
@@ -60,8 +62,18 @@ Both APIs support:
 - `min` (`YYYY-MM-DD` string or `Date`)
 - `max` (`YYYY-MM-DD` string or `Date`)
 - `locale` (BCP-47 locale string)
+- `calendar` (`'default' | 'septimal' | 'hetesflus'` or custom calendar object for class API)
 
 Parsing is deterministic and ISO-first (`YYYY-MM-DD`), formatting uses `Intl.DateTimeFormat`.
+
+## Restored calendars (in-repo)
+
+`src/util/calendars/` is restored and shipped in this repository, including:
+- `DefaultCalendar`
+- `SeptimalCalendar`
+- `HetesflusCalendar`
+
+The datepicker layout (month lengths, month labels, weekday labels, and month grid structure) is driven by the selected calendar implementation.
 
 ## Class methods
 

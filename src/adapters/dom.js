@@ -12,6 +12,7 @@ export function renderPopup(container, state) {
             day.inMonth ? '' : 'is-outside',
             day.selected ? 'is-selected' : '',
             day.today ? 'is-today' : '',
+            day.badge ? 'is-badge' : '',
           ].filter(Boolean).join(' ');
 
           return `
@@ -26,7 +27,7 @@ export function renderPopup(container, state) {
                 aria-current="${day.today ? 'date' : 'false'}"
                 ${day.focused ? 'tabindex="0" data-focused="true"' : 'tabindex="-1"'}
                 ${day.disabled ? 'disabled' : ''}
-              >${day.dayOfMonth}</button>
+              >${day.label || day.dayOfMonth}</button>
             </td>
           `;
         })
